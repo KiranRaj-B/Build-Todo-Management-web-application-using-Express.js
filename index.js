@@ -1,48 +1,44 @@
-// Import Express
 const express = require('express');
-
-// Create an Express app
 const app = express();
+const bodyParser = require('body-parser');
+app.use(bodyParser.json());
 
-// Middleware to parse POST data
-app.use(express.urlencoded({ extended: true }));
+const { Todo } = require('./models');
 
-// Route 1: Home page (GET request)
-app.get('/', (req, res) => {
-  res.send('Welcome to the Home Page!');
+app.get('/todos', (request, response) => {
+  console.log('Todo list');
 });
 
-// Route 2: User page with dynamic ID (GET request)
-app.get('/user/:id', (req, res) => {
-  const userId = req.params.id;
-  res.send(`User Page for User ID: ${userId}`);
-});
-
-// Route 3: Contact page (GET request)
-app.get('/contact', (req, res) => {
-  res.send(`
-    <form action="/contact" method="POST">
-      <label>Name: <input type="text" name="name"></label><br>
-      <label>Message: <textarea name="message"></textarea></label><br>
-      <button type="submit">Submit</button>
-    </form>
-  `);
-});
-
-// Route 3 (POST request for contact form submission)
-app.post('/contact', (req, res) => {
-  const { name, message } = req.body;
-  res.send(`Thank you, ${name}! Your message: "${message}" has been received.`);
-});
-
-// Route 4: Search page (GET request with query parameters)
-app.get('/search', (req, res) => {
-  const query = req.query.q;
-  if (query) {
-    res.send(`Search results for: ${query}`);
-  } else {
-    res.send('No search query provided.');
+app.post('/todos', async (request, response) => {
+  console.log('Creating a todo', request.body);
+  try {
+    const todo = await Todo.addTodo({
+      title: request.body.title,
+      duedate: request.body.duedate,
+      completed: false,
+    });
+    return response.json(todo);
+  } catch (error) {
+    console.log(error);
+    return response.status(422).json(error);
   }
+});
+
+// PUT http://mytodoapp.com/todos/123/markAsCompleted
+app.put('/todos/:id/markAsCompleted', async (request, response) => {
+  console.log('We have to update a todo with ID:', request.params.id)
+  const todo = await Todo.findByPk (request.params.id)
+  try {
+    const updatedTodo = await todo.markAsCompleted()
+    return response.json(updatedTodo)
+  }catch (error) {
+    console.log(error);
+    return response.status(422).json(error);
+  }
+});
+
+app.delete('/todos/:id', (request, response) => {
+  console.log('Delete a todo by ID:', request.params.id);
 });
 
 // Start the server on port 3000
