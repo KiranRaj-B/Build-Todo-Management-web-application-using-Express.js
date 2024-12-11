@@ -16,7 +16,6 @@ module.exports = (sequelize, DataTypes) => {
     }
     static getTodos(){
       return this.findAll();
-      
     }
     markAsCompleted() {
       return this.update({ completed: true });
@@ -31,7 +30,9 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: "Todo",
+      tableName: "Todos", // Ensure this matches the migration
     }
   );
+  
   return Todo;
 };
