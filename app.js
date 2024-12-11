@@ -3,6 +3,32 @@ const app = express();
 const { Todo } = require("./models");
 const bodyParser = require("body-parser");
 app.use(bodyParser.json());
+const path = require("path")
+
+app.set("view engine","ejs");
+
+app.set("view engine", "ejs");
+
+app.get("/", async (request, response) => {
+  try {
+    const allTodos = await Todo.getTodos();  // Fetch todos from the database
+
+    // Check if the request is for HTML or JSON response
+    if (request.accepts("html")) {
+      // If the request is for HTML, render the 'index.ejs' template with allTodos data
+      response.render("index", { allTodos });
+    } else {
+      // If the request is for JSON, return the data as JSON
+      response.json({ allTodos });
+    }
+  } catch (error) {
+    console.error("Error fetching todos:", error);
+    response.status(500).send("Server Error"); // Handle any errors
+  }
+});
+
+
+app.use(express.static(path.join(__dirname,'public')));
 
 app.get("/", function (request, response) {
   response.send("Hello World");
